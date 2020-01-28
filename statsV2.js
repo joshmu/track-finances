@@ -1,5 +1,9 @@
 let data = require('./results.json')
 require('colors')
+const asciichart = require('asciichart')
+const clear = require('clear')
+clear()
+console.log('STATS FOR UBANK TRANSACTIONS'.bold.cyan)
 
 // remove sweep transactions
 data = data.filter(d => !d.desc.match(/sweep/gi))
@@ -13,91 +17,65 @@ data = data.map(d => {
         amount: '-$15.60',
         bal: '$575.71CR'
     */
-  result.unix = new Date(d.date).getTime()
+  result.unix = newDate(d.date).getTime()
   result.amount = +d.amount.replace('$', '')
   result.bal = +d.bal.match(/(\d+\.\d+)/gi)
   return result
 })
 
-// batch by days (object) into a daily transactions array
-let dailyObj = data.reduce((acc, c) => {
-  acc[c.date]
-    ? acc[c.date].transactions.push(c)
-    : (acc[c.date] = { transactions: [c] })
-  return acc
-}, {})
+// create an array with each entry as a day
+const firstUnix = data[data.length - 1].unix
+const lastUnix = data[0].unix
+const daysDuration = Math.ceil((lastUnix - firstUnix) / 1000 / 60 / 60 / 24)
 
-for (date in dailyObj) {
-  let day = dailyObj[date]
-
-  // date
-  console.log({ date })
-  const [d, m, y] = date.split(/\//g)
-  day.date = new Date(+y, +m - 1, +d).toString()
-  console.log(day.date)
-
+// initialize
+let daysArr = new Array(daysDuration).fill({}).map((day, i) => {
+  day = {}
+  day.unix = firstUnix + i * 24 * 60 * 60 * 1000
+  day.date = shortAusDate(day.unix)
+  day.transactions = data.filter(dataDay => day.date === dataDay.date)
+  // console.log({ date: day.date, transactions: day.transactions })
   // add a total
   day.total = day.transactions.reduce(
     (total, transaction) => total + transaction.amount,
     0
   )
+  return day
+})
+// console.log(daysArr)
 
-  // avg
-  day.avg = +(day.total / day.transactions.length).toFixed(2)
-}
-
-// console.log(dailyObj)
-
-process.exit(0)
-
-// spent each day (converted to array)
-o = Object.keys(o).map(d => {
-  return {
-    date: d,
-    spent: o[d].reduce((acc, c) => acc + c.amount, 0)
+// weekly avg
+let weekly = []
+let weekTotal = 0
+daysArr.forEach((day, i) => {
+  weekTotal += day.total
+  if ((i + 1) % 7 === 0) {
+    weekly.push(weekTotal)
+    weekTotal = 0
   }
 })
-// console.log(o)
+console.log(weekly)
 
-let unix = new Date(o[o.length - 1].date).getTime()
-let today = new Date().getTime()
-let totalDays = Math.round((today - unix) / 1000 / 60 / 60 / 24)
+// weekly in to daily for longer graph
+let mod = weekly
+  .map(w => {
+    return new Array(7).fill(Math.abs(w / 7))
+  })
+  .flat(1)
 
-// other costs
-let rent_w = 120 // lancefield
-let joint_w = 25
-let phone_w = 10
-let travel_w = 40
-let bills_w = 25
+console.log(`${daysDuration} days of data...`.cyan)
+console.log(`${weekly.length} weeks.`.cyan)
+console.log(asciichart.plot(mod, { height: 30 }))
 
-let total = Math.abs(Math.round(o.reduce((acc, c) => acc + c.spent, 0)))
-let avgDaily = Math.abs(Math.round(total / totalDays))
-let avgWeekly = Math.abs(
-  avgDaily * 7 + rent_w + joint_w + phone_w + travel_w + bills_w
-)
-
-console.log('\n\n')
-console.log(`${totalDays} days...`.green)
-console.log(
-  `Total spend since ${o[o.length - 1].date}: $${total.toFixed(2)}`.cyan
-)
-console.log(`Average purchases per day: $${avgDaily}`.cyan)
-console.log(`Average spend per week: $${Math.round(avgDaily * 7)}`.cyan)
-console.log(`Average spend per month: $${avgDaily * 7 * 4}`.cyan)
-console.log('')
-console.log(`Average life cost per day: $${Math.round(avgWeekly / 7)}`.yellow)
-console.log(`Average life cost per week: $${avgWeekly}`.yellow)
-console.log(`Average life cost per month: $${avgWeekly * 4}`.yellow)
-console.log('\n\n')
-
-// average spend that week ** incorrect only based on 7 entries rather than date specific
-/*
-let weekly = []
-for (let i = 0; i < o.length; i+=7) {
-    let avg = +(o.slice(i, i+7).reduce((acc, c) => acc + c.spent, 0) / 7).toFixed(2)
-
-    weekly.push(avg)
+function newDate(date) {
+  const [d, m, y] = date.split(/\//g)
+  return new Date(+y, +m - 1, +d + 1)
 }
 
-console.log(weekly)
-*/
+function shortAusDate(unix) {
+  const date = new Date(unix)
+  const month = date.getMonth() + 1
+  return `${date.getDate()}/${
+    month < 10 ? '0' + month : month
+  }/${date.getFullYear()}`
+}

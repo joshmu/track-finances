@@ -9,6 +9,8 @@
   "author": "josh mu",
   "license": "ISC",
   "dependencies": {
+    "asciichart": "^1.5.9",
+    "clear": "^0.1.0",
     "colors": "^1.4.0",
     "dotenv": "^8.2.0",
     "puppeteer": "^2.0.0",
