@@ -19,12 +19,36 @@ data = data.map(d => {
   return result
 })
 
-// batch by days (object)
-let o = data.reduce((acc, c) => {
-  acc[c.date] ? acc[c.date].push(c) : (acc[c.date] = [c])
+// batch by days (object) into a daily transactions array
+let dailyObj = data.reduce((acc, c) => {
+  acc[c.date]
+    ? acc[c.date].transactions.push(c)
+    : (acc[c.date] = { transactions: [c] })
   return acc
 }, {})
-console.log(o)
+
+for (date in dailyObj) {
+  let day = dailyObj[date]
+
+  // date
+  console.log({ date })
+  const [d, m, y] = date.split(/\//g)
+  day.date = new Date(+y, +m - 1, +d).toString()
+  console.log(day.date)
+
+  // add a total
+  day.total = day.transactions.reduce(
+    (total, transaction) => total + transaction.amount,
+    0
+  )
+
+  // avg
+  day.avg = +(day.total / day.transactions.length).toFixed(2)
+}
+
+// console.log(dailyObj)
+
+process.exit(0)
 
 // spent each day (converted to array)
 o = Object.keys(o).map(d => {
