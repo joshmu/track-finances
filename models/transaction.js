@@ -1,11 +1,9 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-// todo: need a variable to mark a winner
-
 const transactionSchema = new Schema(
   {
-    id: { type: String, required: true, unique: true },
+    hashId: { type: Number, required: true, unique: true },
     bank: String,
     date: Date,
     desc: String,
