@@ -4,6 +4,7 @@ const asciichart = require('asciichart')
 const clear = require('clear')
 clear()
 console.log('STATS FOR UBANK TRANSACTIONS'.bold.cyan)
+console.log(`${data[data.length - 1].date} - ${data[0].date}`.bold.cyan)
 
 // remove sweep transactions
 data = data.filter(d => !d.desc.match(/sweep/gi))
@@ -54,18 +55,38 @@ daysArr.forEach((day, i) => {
     weekTotal = 0
   }
 })
-console.log(weekly)
+// console.log(weekly)
 
+/*
 // weekly in to daily for longer graph
 let mod = weekly
   .map(w => {
     return new Array(7).fill(Math.abs(w / 7))
   })
   .flat(1)
+  */
+
+// 7 day moving avg
+const rangeDays = 30
+const ma = daysArr.slice(rangeDays).map((day, i) => {
+  const idx = i + rangeDays
+  let rangeTotal = 0
+  for (let y = idx - rangeDays; y <= idx; y++) {
+    // console.log({ y, idx })
+    // console.log('daysArr[y]', daysArr[y])
+    rangeTotal += daysArr[y].total
+  }
+  // console.log(day)
+  return Math.abs(+(rangeTotal / rangeDays).toFixed(2))
+})
+// console.log('ma', ma.slice(-10))
 
 console.log(`${daysDuration} days of data...`.cyan)
 console.log(`${weekly.length} weeks.`.cyan)
-console.log(asciichart.plot(mod, { height: 30 }))
+console.log(`${rangeDays} day moving average:`.yellow)
+console.log('')
+console.log(asciichart.plot(ma, { height: 30 }))
+console.log('')
 
 function newDate(date) {
   const [d, m, y] = date.split(/\//g)
