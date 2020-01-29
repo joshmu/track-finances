@@ -1,10 +1,13 @@
 {
   "name": "ubank",
   "version": "1.0.0",
-  "description": "",
+  "description": "scrape my transactions",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./app.js",
+    "server": "nodemon ./server.js",
+    "scrape": "node ./lib/scrape-ubank.js",
+    "stats": "node ./lib/getMonthlyTransactions.js"
   },
   "author": "josh mu",
   "license": "ISC",
@@ -13,8 +16,12 @@
     "clear": "^0.1.0",
     "colors": "^1.4.0",
     "dotenv": "^8.2.0",
+    "mongoose": "^5.8.10",
     "puppeteer": "^2.0.0",
     "puppeteer-extra": "^3.1.9",
     "puppeteer-extra-plugin-stealth": "^2.4.9"
+  },
+  "engines": {
+    "node": "12.x"
   }
 }
