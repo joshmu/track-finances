@@ -5,12 +5,10 @@ const { newDate, stringHash } = require('./lib/utils.js')
 const { waitForDb, saveTransactions } = require('./lib/db.js')
 ;(async () => {
   await waitForDb()
-  // const ubankTransactions = await scrapeUbank()
-  const ubankTransactions = require('./output/results.json')
-  console.log(ubankTransactions.slice(-10))
+  const ubankTransactions = await scrapeUbank()
+  // const ubankTransactions = require('./output/results.json')
   // parse
   const formattedUbankTransactions = formatUbank(ubankTransactions)
-  console.log(formattedUbankTransactions.slice(-10))
   // add to db
   await saveTransactions(formattedUbankTransactions)
   console.log('done'.yellow)
