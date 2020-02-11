@@ -1,5 +1,5 @@
 {
-  "name": "ubank",
+  "name": "trackFinances",
   "version": "1.0.0",
   "description": "scrape my transactions",
   "main": "app.js",
